@@ -30,6 +30,7 @@ const eventFiles = fs
 
 commandFiles.forEach((file) => {
   const filePath = path.join(commandsPath, file);
+  console.log(filePath);
   const command = require(filePath);
   client.commands.set(command.data.name, command);
 });
