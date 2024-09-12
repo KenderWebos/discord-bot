@@ -1,0 +1,28 @@
+{
+  "name": "rowbot",
+  "version": "1.0.0",
+  "description": "",
+  "main": "./src/index.js",
+  "scripts": {
+    "dev": "node ./src/index.js",
+    "prestart": "node ./src/functions/deploycommands.js",
+    "start": "node ./src/index.js",
+    "lint": "eslint --ext .ts,.js",
+    "format": "eslint --ext .ts,.js --fix"
+  },
+  "engines": {
+    "node": ">=16.9.x"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "dotenv": "^16.0.3",
+    "eslint": "^8.20.0",
+    "eslint-config-prettier": "^8.5.0",
+    "prettier": "^2.7.1"
+  },
+  "dependencies": {
+    "discord.js": "^14.1.1"
+  }
+}
