@@ -12,9 +12,16 @@ intents.message_content = True
 
 bot = commands.Bot(command_prefix='!', intents=intents)
 
+print("Iniciando bot...")
+
 @bot.event
 async def on_ready():
     print(f'Bot conectado como {bot.user}')
+    try:
+        synced = await bot.tree.sync()
+        print(f"Comandos sincronizados: {len(synced)}")
+    except Exception as e:
+        print(f"Error al sincronizar comandos: {e}")
 
 @bot.command()
 async def ping(ctx):
@@ -22,14 +29,18 @@ async def ping(ctx):
 
 @bot.tree.command(name="jugar", description="Juega a Fuego, Nieve y Agua")
 async def jugar(interaction: discord.Interaction, opcion: str):
-    opciones = ["fuego", "nieve", "agua"]
-    if opcion.lower() not in opciones:
-        await interaction.response.send_message("Por favor, elige una opción válida: fuego, nieve o agua.", ephemeral=True)
-        return
+    try:
+        opciones = ["fuego", "nieve", "agua"]
+        if opcion.lower() not in opciones:
+            await interaction.response.send_message("Por favor, elige una opción válida: fuego, nieve o agua.", ephemeral=True)
+            return
 
-    bot_choice = random.choice(opciones)
-    resultado = determinar_ganador(opcion.lower(), bot_choice)
-    await interaction.response.send_message(f"Elegiste: {opcion.capitalize()}\nEl bot eligió: {bot_choice.capitalize()}\n{resultado}")
+        bot_choice = random.choice(opciones)
+        resultado = determinar_ganador(opcion.lower(), bot_choice)
+        await interaction.response.send_message(f"Elegiste: {opcion.capitalize()}\nEl bot eligió: {bot_choice.capitalize()}\n{resultado}")
+    except Exception as e:
+        print(f"Error en comando jugar: {e}")
+        await interaction.response.send_message("Hubo un error al ejecutar el comando.", ephemeral=True)
 
 def determinar_ganador(jugador, bot):
     if jugador == bot:
@@ -41,10 +52,17 @@ def determinar_ganador(jugador, bot):
 
 @bot.tree.command(name="help", description="Muestra información sobre los comandos disponibles")
 async def help(interaction: discord.Interaction):
-    embed = discord.Embed(title="Comandos del Bot", description="Aquí tienes una lista de los comandos disponibles:", color=discord.Color.blue())
-    embed.add_field(name="/ping", value="Responde con 'Pong!'", inline=False)
-    embed.add_field(name="/jugar [opcion]", value="Juega a Fuego, Nieve y Agua. Opciones: fuego, nieve, agua", inline=False)
-    await interaction.response.send_message(embed=embed)
+    try:
+        embed = discord.Embed(title="Comandos del Bot", description="Aquí tienes una lista de los comandos disponibles:", color=discord.Color.blue())
+        embed.add_field(name="/ping", value="Responde con 'Pong!'", inline=False)
+        embed.add_field(name="/jugar [opcion]", value="Juega a Fuego, Nieve y Agua. Opciones: fuego, nieve, agua", inline=False)
+        await interaction.response.send_message(embed=embed)
+    except Exception as e:
+        print(f"Error en comando help: {e}")
+        await interaction.response.send_message("Hubo un error al ejecutar el comando.", ephemeral=True)
 
 if __name__ == '__main__':
-    bot.run(TOKEN) 
+    try:
+        bot.run(TOKEN)
+    except Exception as e:
+        print(f"Error al iniciar el bot: {e}") 
