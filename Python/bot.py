@@ -21,9 +21,14 @@ async def ping(ctx):
     await ctx.send('Pong!')
 
 @bot.tree.command(name="jugar", description="Juega a Fuego, Nieve y Agua")
-async def jugar(interaction: discord.Interaction, opcion: str = discord.app_commands.Choice(name="opcion", choices=["fuego", "nieve", "agua"])):
-    bot_choice = random.choice(["fuego", "nieve", "agua"])
-    resultado = determinar_ganador(opcion, bot_choice)
+async def jugar(interaction: discord.Interaction, opcion: str):
+    opciones = ["fuego", "nieve", "agua"]
+    if opcion.lower() not in opciones:
+        await interaction.response.send_message("Por favor, elige una opción válida: fuego, nieve o agua.", ephemeral=True)
+        return
+
+    bot_choice = random.choice(opciones)
+    resultado = determinar_ganador(opcion.lower(), bot_choice)
     await interaction.response.send_message(f"Elegiste: {opcion.capitalize()}\nEl bot eligió: {bot_choice.capitalize()}\n{resultado}")
 
 def determinar_ganador(jugador, bot):
