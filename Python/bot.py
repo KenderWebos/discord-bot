@@ -12,6 +12,13 @@ intents.message_content = True
 
 bot = commands.Bot(command_prefix='!', intents=intents)
 
+# Diccionario de emojis y mensajes
+ELEMENTOS = {
+    "fuego": {"emoji": "🔥", "mensaje_empate": "¡Todo está en llamas! 🔥🔥"},
+    "agua": {"emoji": "💧", "mensaje_empate": "¡Todo está inundado! 💧💧"},
+    "nieve": {"emoji": "❄️", "mensaje_empate": "¡Todo se congela! ❄️❄️"}
+}
+
 print("Iniciando bot...")
 
 @bot.event
@@ -37,18 +44,45 @@ async def jugar(interaction: discord.Interaction, opcion: str):
 
         bot_choice = random.choice(opciones)
         resultado = determinar_ganador(opcion.lower(), bot_choice)
-        await interaction.response.send_message(f"Elegiste: {opcion.capitalize()}\nEl bot eligió: {bot_choice.capitalize()}\n{resultado}")
+        
+        # Crear embed para la respuesta
+        embed = discord.Embed(
+            title="🎮 Fuego, Nieve y Agua 🎮",
+            color=discord.Color.blue()
+        )
+        
+        # Añadir campos al embed
+        embed.add_field(
+            name="Tu elección",
+            value=f"{ELEMENTOS[opcion.lower()]['emoji']} {opcion.capitalize()}",
+            inline=True
+        )
+        embed.add_field(
+            name="Elección del bot",
+            value=f"{ELEMENTOS[bot_choice]['emoji']} {bot_choice.capitalize()}",
+            inline=True
+        )
+        embed.add_field(
+            name="Resultado",
+            value=resultado,
+            inline=False
+        )
+        
+        # Añadir footer
+        embed.set_footer(text="¡Gracias por jugar! 🎲")
+        
+        await interaction.response.send_message(embed=embed)
     except Exception as e:
         print(f"Error en comando jugar: {e}")
         await interaction.response.send_message("Hubo un error al ejecutar el comando.", ephemeral=True)
 
 def determinar_ganador(jugador, bot):
     if jugador == bot:
-        return "¡Empate!"
+        return f"**¡Empate!** {ELEMENTOS[jugador]['mensaje_empate']}"
     elif (jugador == "fuego" and bot == "nieve") or (jugador == "nieve" and bot == "agua") or (jugador == "agua" and bot == "fuego"):
-        return "¡Ganaste!"
+        return f"**¡Ganaste!** {ELEMENTOS[jugador]['emoji']} vence a {ELEMENTOS[bot]['emoji']}"
     else:
-        return "¡Perdiste!"
+        return f"**¡Perdiste!** {ELEMENTOS[bot]['emoji']} vence a {ELEMENTOS[jugador]['emoji']}"
 
 @bot.tree.command(name="help", description="Muestra información sobre los comandos disponibles")
 async def help(interaction: discord.Interaction):
