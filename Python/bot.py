@@ -1,9 +1,11 @@
 import os
 import discord
 from discord.ext import commands
+from discord.ui import Button, View
 from dotenv import load_dotenv
 import random
 import requests
+import html
 
 load_dotenv()
 TOKEN = os.getenv('DISCORD_TOKEN')
@@ -19,6 +21,11 @@ ELEMENTOS = {
     "agua": {"emoji": "💧", "mensaje_empate": "¡Todo está inundado! 💧💧"},
     "nieve": {"emoji": "❄️", "mensaje_empate": "¡Todo se congela! ❄️❄️"}
 }
+
+class TriviaView(View):
+    def __init__(self, correct_answer):
+        super().__init__(timeout=60)
+        self.correct_answer = correct_answer
 
 print("Iniciando bot...")
 
@@ -116,11 +123,58 @@ def determinar_ganador(jugador, bot):
 async def help(interaction: discord.Interaction):
     try:
         embed = discord.Embed(title="Comandos del Bot", description="Aquí tienes una lista de los comandos disponibles:", color=discord.Color.blue())
-        embed.add_field(name="/ping", value="Responde con 'Pong!'", inline=False)
+        embed.add_field(name="!ping", value="Responde con 'Pong!'", inline=False)
+        embed.add_field(name="!cat", value="Muestra una imagen aleatoria de gato", inline=False)
         embed.add_field(name="/jugar [opcion]", value="Juega a Fuego, Nieve y Agua. Opciones: fuego, nieve, agua", inline=False)
+        embed.add_field(name="/trivia", value="Pregunta de trivia aleatoria con opciones múltiples", inline=False)
         await interaction.response.send_message(embed=embed)
     except Exception as e:
         print(f"Error en comando help: {e}")
+        await interaction.response.send_message("Hubo un error al ejecutar el comando.", ephemeral=True)
+
+@bot.tree.command(name="trivia", description="Pregunta de trivia aleatoria con opciones múltiples")
+async def trivia(interaction: discord.Interaction):
+    try:
+        response = requests.get('https://opentdb.com/api.php?amount=1&type=multiple')
+        if response.status_code != 200:
+            await interaction.response.send_message("Lo siento, no pude obtener una pregunta de trivia en este momento.", ephemeral=True)
+            return
+
+        data = response.json()
+        if data['response_code'] != 0 or not data['results']:
+            await interaction.response.send_message("No hay preguntas disponibles.", ephemeral=True)
+            return
+
+        result = data['results'][0]
+        question = html.unescape(result['question'])
+        correct_answer = html.unescape(result['correct_answer'])
+        incorrect_answers = [html.unescape(ans) for ans in result['incorrect_answers']]
+
+        options = [correct_answer] + incorrect_answers
+        random.shuffle(options)
+
+        embed = discord.Embed(
+            title="🧠 Pregunta de Trivia 🧠",
+            description=question,
+            color=discord.Color.green()
+        )
+        embed.set_footer(text="Elige una opción haciendo clic en el botón correspondiente.")
+
+        view = TriviaView(correct_answer)
+
+        for option in options:
+            button = Button(label=option, style=discord.ButtonStyle.primary)
+            async def button_callback(interaction, button=button, option=option):
+                if option == view.correct_answer:
+                    await interaction.response.send_message("¡Correcto! 🎉 Bien hecho.", ephemeral=True)
+                else:
+                    await interaction.response.send_message(f"Incorrecto. La respuesta correcta era: **{view.correct_answer}**. ¡No te desanimes, sigue intentando! 😄", ephemeral=True)
+            button.callback = button_callback
+            view.add_item(button)
+
+        await interaction.response.send_message(embed=embed, view=view)
+    except Exception as e:
+        print(f"Error en comando trivia: {e}")
         await interaction.response.send_message("Hubo un error al ejecutar el comando.", ephemeral=True)
 
 if __name__ == '__main__':
