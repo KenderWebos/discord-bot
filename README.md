@@ -23,5 +23,7 @@ Este proyecto contiene un bot básico de Discord desarrollado en Python usando l
 
 ## Estructura
 - `bot.py`: Archivo principal del bot.
+- `cogs/`: Directorio con cogs para organizar comandos.
 - `requirements.txt`: Dependencias del proyecto.
-- `.env`: Variables de entorno (no se incluye por seguridad). 
+- `Dockerfile` y `docker-compose.yml`: Archivos para despliegue con Docker.
+- `.env`: Variables de entorno (no se incluye por seguridad).

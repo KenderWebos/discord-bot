@@ -3,8 +3,6 @@ version: '3.8'
 services:
   bot:
     build: .
-    volumes:
-      - ./Python:/app/Python
     environment:
       - DISCORD_TOKEN=${DISCORD_TOKEN}
-    restart: unless-stopped 
+    restart: unless-stopped
